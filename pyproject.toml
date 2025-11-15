@@ -40,7 +40,6 @@ exclude = '''
 
 [tool.isort]
 profile = "black"
-line-length = 120
 skip = [".venv", ".git", "__pycache__", "build", "dist"]
 
 [tool.pylint]

@@ -72,4 +72,3 @@ root_logger.addHandler(handler)
 root_logger.setLevel(LOG_LEVEL)
 
 LOGGER = structlog.stdlib.get_logger("default_logger")
-

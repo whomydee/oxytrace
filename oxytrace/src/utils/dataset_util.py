@@ -2,8 +2,8 @@ from pathlib import Path
 
 import gdown
 
-from env_config import AppConfig
-from custom_logger import LOGGER
+from .custom_logger import LOGGER
+from .env_config import AppConfig
 
 
 def download_dataset(output_filename: str = "dataset.csv") -> str:
