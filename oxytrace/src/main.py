@@ -6,6 +6,7 @@ Main application entry point demonstrating the complete workflow.
 
 import argparse
 from pathlib import Path
+
 import pandas as pd
 
 from .feature_engineering import OxygenFeatureEngineer
@@ -26,20 +27,16 @@ def demo_workflow(data_percent=5.0):
 
     # Load data
     LOGGER.info("Loading data", percent=data_percent)
-    df = pd.read_csv('oxytrace/dataset/dataset.csv')
-    
+    df = pd.read_csv("oxytrace/dataset/dataset.csv")
+
     # Sample data
     sample_size = int(len(df) * data_percent / 100)
     df = df.head(sample_size)
-    
+
     # Filter to oxygen readings only
-    df = df[df['Oxygen[%sat]'].notna()].copy()
-    
-    LOGGER.info(
-        "Data loaded",
-        total_rows=len(df),
-        oxygen_readings=df['Oxygen[%sat]'].count()
-    )
+    df = df[df["Oxygen[%sat]"].notna()].copy()
+
+    LOGGER.info("Data loaded", total_rows=len(df), oxygen_readings=df["Oxygen[%sat]"].count())
 
     # Check if trained model exists
     model_path = Path("artifacts/anomaly_detector/anomaly_detector.pkl")
@@ -57,31 +54,29 @@ def demo_workflow(data_percent=5.0):
     # Engineer features
     LOGGER.info("Engineering features")
     features = feature_engineer.transform(df)
-    
+
     # Run anomaly detection
     LOGGER.info("Running anomaly detection")
     scores, severity = detector.predict_with_severity(features)
-    
+
     # Add results to dataframe
-    df['anomaly_score'] = scores
-    df['severity'] = severity
-    
+    df["anomaly_score"] = scores
+    df["severity"] = severity
+
     # Show statistics
     anomaly_count = (scores > 0.25).sum()  # Using optimal threshold
     anomaly_rate = (scores > 0.25).mean() * 100
-    
+
     LOGGER.info(
-        "Anomaly detection complete",
-        anomalies_detected=int(anomaly_count),
-        anomaly_rate=f"{anomaly_rate:.2f}%"
+        "Anomaly detection complete", anomalies_detected=int(anomaly_count), anomaly_rate=f"{anomaly_rate:.2f}%"
     )
-    
+
     # Severity breakdown
     severity_dist = {
-        'normal': (severity == 0).sum(),
-        'mild': (severity == 1).sum(),
-        'moderate': (severity == 2).sum(),
-        'severe': (severity == 3).sum()
+        "normal": (severity == 0).sum(),
+        "mild": (severity == 1).sum(),
+        "moderate": (severity == 2).sum(),
+        "severe": (severity == 3).sum(),
     }
     LOGGER.info("Severity distribution", distribution=severity_dist)
 
