@@ -8,10 +8,10 @@ Quick Usage:
     # Load models
     from oxytrace.src.feature_engineering import OxygenFeatureEngineer
     from oxytrace.src.models.unified_anomaly_detector import UnifiedAnomalyDetector
-    
+
     fe = OxygenFeatureEngineer.load('artifacts/anomaly_detector/feature_engineer.pkl')
     detector = UnifiedAnomalyDetector.load('artifacts/anomaly_detector/anomaly_detector.pkl')
-    
+
     # Single prediction
     result = UnifiedAnomalyDetector.predict_single(
         oxygen_data={'time': '2024-01-01 10:00:00', 'Oxygen[%sat]': 88.5},
@@ -126,7 +126,7 @@ class UnifiedAnomalyDetector:
     def predict_single(cls, oxygen_data, feature_engineer, detector, threshold=0.25):
         """
         Predict anomaly for a single input or batch of oxygen readings.
-        
+
         Args:
             oxygen_data: Can be:
                 - DataFrame with 'time' and 'Oxygen[%sat]' columns
@@ -135,7 +135,7 @@ class UnifiedAnomalyDetector:
             feature_engineer: Trained OxygenFeatureEngineer instance
             detector: Trained UnifiedAnomalyDetector instance
             threshold: Anomaly threshold (default: 0.25)
-            
+
         Returns:
             dict with keys:
                 - 'anomaly_score': float (0-1, higher = more anomalous)
@@ -147,48 +147,45 @@ class UnifiedAnomalyDetector:
         if isinstance(oxygen_data, dict):
             df = pd.DataFrame([oxygen_data])
         elif isinstance(oxygen_data, (list, tuple)) and len(oxygen_data) == 2:
-            df = pd.DataFrame({
-                'time': [oxygen_data[0]],
-                'Oxygen[%sat]': [oxygen_data[1]]
-            })
+            df = pd.DataFrame({"time": [oxygen_data[0]], "Oxygen[%sat]": [oxygen_data[1]]})
         elif isinstance(oxygen_data, pd.DataFrame):
             df = oxygen_data.copy()
         else:
-            raise ValueError(
-                "oxygen_data must be dict, (time, value) tuple, or DataFrame"
-            )
-        
+            raise ValueError("oxygen_data must be dict, (time, value) tuple, or DataFrame")
+
         # Ensure time is datetime
-        if 'time' in df.columns and not pd.api.types.is_datetime64_any_dtype(df['time']):
-            df['time'] = pd.to_datetime(df['time'])
-        
+        if "time" in df.columns and not pd.api.types.is_datetime64_any_dtype(df["time"]):
+            df["time"] = pd.to_datetime(df["time"])
+
         # Engineer features
         features = feature_engineer.transform(df)
-        
+
         # Predict
         scores, severity = detector.predict_with_severity(features)
-        
+
         # Format results
-        severity_labels = {0: 'normal', 1: 'mild', 2: 'moderate', 3: 'severe'}
-        
+        severity_labels = {0: "normal", 1: "mild", 2: "moderate", 3: "severe"}
+
         if len(scores) == 1:
             # Single prediction
             return {
-                'anomaly_score': float(scores[0]),
-                'severity': int(severity[0]),
-                'is_anomaly': bool(scores[0] > threshold),
-                'label': severity_labels[int(severity[0])]
+                "anomaly_score": float(scores[0]),
+                "severity": int(severity[0]),
+                "is_anomaly": bool(scores[0] > threshold),
+                "label": severity_labels[int(severity[0])],
             }
         else:
             # Batch prediction
             results = []
             for i in range(len(scores)):
-                results.append({
-                    'anomaly_score': float(scores[i]),
-                    'severity': int(severity[i]),
-                    'is_anomaly': bool(scores[i] > threshold),
-                    'label': severity_labels[int(severity[i])]
-                })
+                results.append(
+                    {
+                        "anomaly_score": float(scores[i]),
+                        "severity": int(severity[i]),
+                        "is_anomaly": bool(scores[i] > threshold),
+                        "label": severity_labels[int(severity[i])],
+                    }
+                )
             return results
 
     def save(self, filepath):
