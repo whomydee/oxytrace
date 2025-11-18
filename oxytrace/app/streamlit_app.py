@@ -13,10 +13,39 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
-from oxytrace.core.features.oxygen import OxygenFeatureEngineer
+from oxytrace.core.features.oxygen_feature_engineer import OxygenFeatureEngineer
 from oxytrace.core.models.detector import AnomalyDetector
 from oxytrace.core.models.forecaster import Forecaster
+from oxytrace.core.utils.dataset import DatasetManager
 from oxytrace.core.utils.logger import LOGGER
+
+
+def check_dataset_available():
+    """Check if dataset is available and offer to download if not."""
+    dataset_path = DatasetManager.get_dataset_path("dataset.csv")
+    
+    if not dataset_path.exists():
+        st.warning("⚠️ Dataset not found at `oxytrace/data/dataset.csv`")
+        
+        st.markdown("""
+        The training dataset is required to train models. You can:
+        1. Download it automatically using the button below
+        2. Manually place your dataset file at `oxytrace/data/dataset.csv`
+        """)
+        
+        if st.button("📥 Download Dataset from Google Drive", type="primary"):
+            with st.spinner("Downloading dataset... This may take a few minutes."):
+                try:
+                    output_path = DatasetManager.download_dataset()
+                    st.success(f"✅ Dataset downloaded successfully to {output_path}")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"❌ Failed to download dataset: {str(e)}")
+                    st.info("Please ensure DATASET_URL is configured in your .env file or environment variables.")
+        
+        return False
+    
+    return True
 
 
 def get_available_models(model_type="detector"):
@@ -75,6 +104,10 @@ def train_detector_page():
     The model learns patterns from normal data and identifies unusual readings.
     """
     )
+
+    # Check if dataset is available
+    if not check_dataset_available():
+        return
 
     col1, col2 = st.columns(2)
 
@@ -153,6 +186,10 @@ def train_forecaster_page():
     The model captures trends and seasonality in oxygen readings.
     """
     )
+
+    # Check if dataset is available
+    if not check_dataset_available():
+        return
 
     col1, col2 = st.columns(2)
 
@@ -294,15 +331,16 @@ def predict_anomaly_page():
         with st.expander("📊 Preview Data", expanded=False):
             st.dataframe(df_input.head(10), use_container_width=True)
 
-    # Threshold setting
-    threshold = st.slider(
-        "Anomaly Threshold",
-        min_value=0.1,
-        max_value=0.9,
-        value=0.25,
-        step=0.05,
-        help="Higher values = stricter detection",
-    )
+    # Show thresholds info
+    if detector is not None and hasattr(detector, 'threshold_mild_'):
+        with st.expander("ℹ️ Model Thresholds (from training)", expanded=False):
+            st.markdown(f"""
+            - **Severe threshold**: {detector.threshold_severe_:.4f}
+            - **Moderate threshold**: {detector.threshold_moderate_:.4f}
+            - **Mild threshold**: {detector.threshold_mild_:.4f}
+            
+            *Lower raw scores indicate more anomalous readings*
+            """)
 
     # Predict button
     if df_input is not None and st.button("Detect Anomalies", type="primary"):
@@ -311,14 +349,14 @@ def predict_anomaly_page():
                 # Engineer features
                 features = feature_engineer.transform(df_input)
 
-                # Predict
-                scores, severity = detector.predict_with_severity(features)
+                # Predict (scores are now raw Isolation Forest scores, not 0-1)
+                raw_scores, severity = detector.predict_with_severity(features)
 
                 # Add results to dataframe
                 df_results = df_input.copy()
-                df_results["anomaly_score"] = scores
+                df_results["raw_score"] = raw_scores
                 df_results["severity"] = severity
-                df_results["is_anomaly"] = scores > threshold
+                df_results["is_anomaly"] = severity > 0  # Any severity > 0 is anomaly
 
                 severity_labels = {0: "normal", 1: "mild", 2: "moderate", 3: "severe"}
                 df_results["severity_label"] = df_results["severity"].map(severity_labels)
@@ -338,8 +376,8 @@ def predict_anomaly_page():
                     st.metric("Anomaly Rate", f"{anomaly_rate:.1f}%")
 
                 with col4:
-                    avg_score = df_results[df_results["is_anomaly"]]["anomaly_score"].mean() if anomaly_count > 0 else 0
-                    st.metric("Avg Anomaly Score", f"{avg_score:.3f}")
+                    severe_count = (severity == 3).sum()
+                    st.metric("Severe Anomalies", severe_count)
 
                 # Severity breakdown
                 st.subheader("Severity Breakdown")
@@ -400,8 +438,8 @@ def predict_anomaly_page():
                 if anomaly_count > 0:
                     st.subheader("Detected Anomalies")
                     anomalies_df = df_results[df_results["is_anomaly"]][
-                        ["time", "Oxygen[%sat]", "anomaly_score", "severity_label"]
-                    ].sort_values("anomaly_score", ascending=False)
+                        ["time", "Oxygen[%sat]", "raw_score", "severity_label"]
+                    ].sort_values("raw_score", ascending=True)  # Lower score = more anomalous
                     st.dataframe(anomalies_df, use_container_width=True)
 
                 # Download results
