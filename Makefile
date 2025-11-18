@@ -144,6 +144,14 @@ notebook: ## Launch Jupyter notebook
 	@echo "Launching Jupyter notebook..."
 	$(PYTHON) -m jupyter notebook notebooks/
 
+streamlit: ## Launch Streamlit web app
+	@echo "Launching Streamlit app..."
+	$(PYTHON) -m streamlit run oxytrace/app/streamlit_app.py
+
+demo-streamlit: ## Run Streamlit functionality demo
+	@echo "Running Streamlit demo..."
+	$(PYTHON) demo_streamlit.py
+
 #################################################################################
 # Help ##########################################################################
 
