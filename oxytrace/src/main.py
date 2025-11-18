@@ -6,10 +6,11 @@ Main application entry point demonstrating the complete workflow.
 
 import argparse
 from pathlib import Path
+import pandas as pd
 
-from .anomaly_detector import AnomalyDetector
+from .feature_engineering import OxygenFeatureEngineer
+from .models.unified_anomaly_detector import UnifiedAnomalyDetector
 from .utils.custom_logger import LOGGER
-from .utils.dataset_util import DatasetUtil
 
 
 def demo_workflow(data_percent=5.0):
@@ -23,53 +24,66 @@ def demo_workflow(data_percent=5.0):
     LOGGER.info("OXYTRACE DEMO - Complete Workflow")
     LOGGER.info("=" * 80)
 
-    # Load and preprocess data
-    LOGGER.info("Loading and preprocessing data", percent=data_percent)
-    df_raw = DatasetUtil.load_dataset(percent_of_data=data_percent)
-    df_processed = DatasetUtil.preprocess_dataset(df_raw)
-
+    # Load data
+    LOGGER.info("Loading data", percent=data_percent)
+    df = pd.read_csv('oxytrace/dataset/dataset.csv')
+    
+    # Sample data
+    sample_size = int(len(df) * data_percent / 100)
+    df = df.head(sample_size)
+    
+    # Filter to oxygen readings only
+    df = df[df['Oxygen[%sat]'].notna()].copy()
+    
     LOGGER.info(
         "Data loaded",
-        shape=df_processed.shape,
-        columns=list(df_processed.columns),
-        date_range=f"{df_processed['time'].min()} to {df_processed['time'].max()}",
+        total_rows=len(df),
+        oxygen_readings=df['Oxygen[%sat]'].count()
     )
 
     # Check if trained model exists
     model_path = Path("artifacts/anomaly_detector/anomaly_detector.pkl")
+    feature_path = Path("artifacts/anomaly_detector/feature_engineer.pkl")
 
-    if model_path.exists():
+    if model_path.exists() and feature_path.exists():
         LOGGER.info("Loading pre-trained model")
-        detector = AnomalyDetector()
-        detector.load(str(model_path))
-        LOGGER.info("✓ Model loaded")
+        feature_engineer = OxygenFeatureEngineer.load(str(feature_path))
+        detector = UnifiedAnomalyDetector.load(str(model_path))
+        LOGGER.info("Artifacts relevant for prediction loaded")
     else:
-        LOGGER.info("No pre-trained model found. Training on sample data...")
-        detector = AnomalyDetector()
+        LOGGER.info("No pre-trained model found. Please run: python oxytrace/src/train.py")
+        return
 
-        # Use first 70% for training
-        train_size = int(len(df_processed) * 0.7)
-        train_df = df_processed.iloc[:train_size]
-
-        LOGGER.info("Training detector", train_samples=len(train_df))
-        detector.fit(train_df)
-        LOGGER.info("✓ Detector trained")
-
-    # Run anomaly detection on sample
+    # Engineer features
+    LOGGER.info("Engineering features")
+    features = feature_engineer.transform(df)
+    
+    # Run anomaly detection
     LOGGER.info("Running anomaly detection")
-    sample_df = df_processed.head(1000)
-    results_df = detector.detect(sample_df)
-
-    anomaly_count = results_df["is_anomaly"].sum()
-    anomaly_rate = results_df["is_anomaly"].mean() * 100
-
+    scores, severity = detector.predict_with_severity(features)
+    
+    # Add results to dataframe
+    df['anomaly_score'] = scores
+    df['severity'] = severity
+    
+    # Show statistics
+    anomaly_count = (scores > 0.25).sum()  # Using optimal threshold
+    anomaly_rate = (scores > 0.25).mean() * 100
+    
     LOGGER.info(
-        "Anomaly detection complete", anomalies_detected=int(anomaly_count), anomaly_rate=f"{anomaly_rate:.2f}%"
+        "Anomaly detection complete",
+        anomalies_detected=int(anomaly_count),
+        anomaly_rate=f"{anomaly_rate:.2f}%"
     )
-
-    if anomaly_count > 0:
-        type_dist = results_df[results_df["is_anomaly"]]["anomaly_type"].value_counts().to_dict()
-        LOGGER.info("Anomaly types detected", distribution=type_dist)
+    
+    # Severity breakdown
+    severity_dist = {
+        'normal': (severity == 0).sum(),
+        'mild': (severity == 1).sum(),
+        'moderate': (severity == 2).sum(),
+        'severe': (severity == 3).sum()
+    }
+    LOGGER.info("Severity distribution", distribution=severity_dist)
 
     LOGGER.info("=" * 80)
     LOGGER.info("Demo complete!")
