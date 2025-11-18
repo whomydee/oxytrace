@@ -8,7 +8,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from oxytrace.core.features.oxygen import OxygenFeatureEngineer
+from oxytrace.core.features.oxygen_feature_engineer import OxygenFeatureEngineer
 from oxytrace.core.models.detector import AnomalyDetector
 
 # Add parent directory to path
