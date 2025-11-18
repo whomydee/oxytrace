@@ -1,6 +1,6 @@
+import zipfile
 from pathlib import Path
 from typing import Optional, Tuple
-import zipfile
 
 import gdown
 import pandas as pd
@@ -162,99 +162,84 @@ class DatasetUtil:
         # Fallback
         df = pd.read_csv(dataset_path)
         return df
-    
+
     @staticmethod
     def preprocess_dataset(df: pd.DataFrame, remove_null_oxygen: bool = True) -> pd.DataFrame:
         """
         Preprocess the dataset for time series analysis.
-        
+
         Args:
             df: Raw dataframe with 'time' and 'Oxygen[%sat]' columns
             validate: Whether to perform validation checks
             remove_null_oxygen: Whether to filter out rows with NULL oxygen values
-            
+
         Returns:
             pd.DataFrame: Preprocessed dataframe with datetime index and features
         """
         LOGGER.info("Starting dataset preprocessing", rows=len(df))
-        
+
         df_processed = df.copy()
-        
+
         # Convert time column to datetime
-        if 'time' in df_processed.columns:
-            df_processed['time'] = pd.to_datetime(df_processed['time'])
+        if "time" in df_processed.columns:
+            df_processed["time"] = pd.to_datetime(df_processed["time"])
             LOGGER.info("Converted 'time' column to datetime")
         else:
             raise ValueError("Dataset must contain 'time' column")
-        
+
         # Filter NULL oxygen values BEFORE sorting
-        if remove_null_oxygen and 'Oxygen[%sat]' in df_processed.columns:
-            null_count = df_processed['Oxygen[%sat]'].isna().sum()
+        if remove_null_oxygen and "Oxygen[%sat]" in df_processed.columns:
+            null_count = df_processed["Oxygen[%sat]"].isna().sum()
             null_pct = (null_count / len(df_processed)) * 100
-            
+
             LOGGER.info(
                 "Filtering NULL oxygen values",
                 null_count=null_count,
                 null_percentage=f"{null_pct:.2f}%",
-                rows_before=len(df_processed)
+                rows_before=len(df_processed),
             )
-            
-            df_processed = df_processed[df_processed['Oxygen[%sat]'].notna()].copy()
-            
-            LOGGER.info(
-                "NULL oxygen values removed",
-                rows_after=len(df_processed),
-                rows_removed=null_count
-            )
-            
+
+            df_processed = df_processed[df_processed["Oxygen[%sat]"].notna()].copy()
+
+            LOGGER.info("NULL oxygen values removed", rows_after=len(df_processed), rows_removed=null_count)
+
             if len(df_processed) == 0:
                 raise ValueError("No valid oxygen readings found in dataset!")
-        
+
         # Sort by time
-        df_processed = df_processed.sort_values('time').reset_index(drop=True)
-        
-        LOGGER.info(
-            "Preprocessing complete",
-            rows=len(df_processed),
-            columns=list(df_processed.columns)
-        )
-        
+        df_processed = df_processed.sort_values("time").reset_index(drop=True)
+
+        LOGGER.info("Preprocessing complete", rows=len(df_processed), columns=list(df_processed.columns))
+
         return df_processed
 
     @staticmethod
     def split_train_test_val(
-        df: pd.DataFrame,
-        train_ratio: float = 0.7,
-        val_ratio: float = 0.15,
-        test_ratio: float = 0.15
+        df: pd.DataFrame, train_ratio: float = 0.7, val_ratio: float = 0.15, test_ratio: float = 0.15
     ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         """
         Split dataset into train, validation, and test sets chronologically.
-        
+
         Args:
             df: Preprocessed dataframe sorted by time
             train_ratio: Proportion for training set
             val_ratio: Proportion for validation set
             test_ratio: Proportion for test set
-            
+
         Returns:
             Tuple of (train_df, val_df, test_df)
         """
-        
+
         n = len(df)
         train_end = int(n * train_ratio)
         val_end = int(n * (train_ratio + val_ratio))
-        
+
         train_df = df.iloc[:train_end].copy()
         val_df = df.iloc[train_end:val_end].copy()
         test_df = df.iloc[val_end:].copy()
-        
+
         LOGGER.info(
-            "Split dataset",
-            total_rows=n,
-            train_rows=len(train_df),
-            val_rows=len(val_df),
-            test_rows=len(test_df)
+            "Split dataset", total_rows=n, train_rows=len(train_df), val_rows=len(val_df), test_rows=len(test_df)
         )
-        
+
         return train_df, val_df, test_df
