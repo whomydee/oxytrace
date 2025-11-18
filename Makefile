@@ -65,3 +65,38 @@ lint-pylint-with-report-txt: ## Checks if .py files follow pylint and generates 
 	set -o pipefail && $(PYTHON) -m pylint oxytrace/ | tee pylint-output.txt
 
 check-lint: lint-flake8 lint-pylint ## Checks all linting issues
+
+
+#################################################################################
+# Data & Model Management #######################################################
+
+download-data: ## Download dataset from Google Drive
+	@echo "Downloading dataset..."
+	$(PYTHON) -c "from oxytrace.src.utils.dataset_util import DatasetUtil; DatasetUtil.download_dataset()"
+
+train: ## Train models (10% data, quick mode)
+	@echo "Training models..."
+	$(PYTHON) oxytrace/src/train.py --data-percent 10
+
+train-full: ## Train models on full dataset
+	@echo "Training models on full dataset (this may take hours)..."
+	$(PYTHON) oxytrace/src/train.py --data-percent 100
+
+
+clean-models: ## Remove trained models
+	@echo "Removing trained models..."
+	rm -rf artifacts/anomaly_detector
+
+clean-outputs: ## Remove output files
+	@echo "Removing outputs..."
+	rm -rf outputs/
+
+clean: clean-models clean-outputs ## Clean all generated files
+
+#################################################################################
+# Help ##########################################################################
+
+help: ## Show this help message
+	@echo "Available targets:"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-25s %s\n", $$1, $$2}'
+

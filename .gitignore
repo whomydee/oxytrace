@@ -208,3 +208,9 @@ __marimo__/
 
 # Application specific ignores
 */dataset/
+
+# OS specific ignores
+.DS_Store
+
+# Artifacts specific ignores
+artifacts/
