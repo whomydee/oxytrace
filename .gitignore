@@ -208,6 +208,8 @@ __marimo__/
 
 # Application specific ignores
 */dataset/
+*/data/*.csv
+prediction_results.csv
 
 # OS specific ignores
 .DS_Store

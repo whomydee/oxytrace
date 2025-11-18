@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pandas as pd
 
-from oxytrace.src.models.statstical_detector import StatisticalDetector
-from oxytrace.src.utils.custom_logger import LOGGER
+from oxytrace.core.models.statistical_detector import StatisticalDetector
+from oxytrace.core.utils.logger import LOGGER
 
 
 class AnomalyDetector:

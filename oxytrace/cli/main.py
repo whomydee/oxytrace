@@ -9,10 +9,10 @@ from pathlib import Path
 
 import pandas as pd
 
-from .feature_engineering import OxygenFeatureEngineer
-from .models.simple_forecaster import SimpleOxygenForecaster
-from .models.unified_anomaly_detector import UnifiedAnomalyDetector
-from .utils.custom_logger import LOGGER
+from oxytrace.core.features.oxygen import OxygenFeatureEngineer
+from oxytrace.core.models.detector import AnomalyDetector
+from oxytrace.core.models.forecaster import Forecaster
+from oxytrace.core.utils.logger import LOGGER
 
 
 def demo_workflow(data_percent=5.0):
@@ -28,7 +28,7 @@ def demo_workflow(data_percent=5.0):
 
     # Load data
     LOGGER.info("Loading data", percent=data_percent)
-    df = pd.read_csv("oxytrace/dataset/dataset.csv")
+    df = pd.read_csv("oxytrace/data/dataset.csv")
 
     # Sample data
     sample_size = int(len(df) * data_percent / 100)
@@ -46,7 +46,7 @@ def demo_workflow(data_percent=5.0):
     if model_path.exists() and feature_path.exists():
         LOGGER.info("Loading pre-trained model")
         feature_engineer = OxygenFeatureEngineer.load(str(feature_path))
-        detector = UnifiedAnomalyDetector.load(str(model_path))
+        detector = AnomalyDetector.load(str(model_path))
         LOGGER.info("Artifacts relevant for prediction loaded")
     else:
         LOGGER.info("No pre-trained model found. Please run: python oxytrace/src/train_detector.py")
@@ -103,7 +103,7 @@ def train_and_forecast(horizon_days=7, train_first=False):
     # Train if requested or no model exists
     if train_first or not forecaster_path.exists():
         LOGGER.info("Loading data")
-        df = pd.read_csv("oxytrace/dataset/dataset.csv")
+        df = pd.read_csv("oxytrace/data/dataset.csv")
         df["time"] = pd.to_datetime(df["time"], format="mixed")
         df = df[df["Oxygen[%sat]"].notna()].copy()
         df = df.sort_values("time").reset_index(drop=True)
@@ -111,7 +111,7 @@ def train_and_forecast(horizon_days=7, train_first=False):
         LOGGER.info("Data loaded", total_samples=len(df))
         LOGGER.info("Training forecaster")
 
-        forecaster = SimpleOxygenForecaster()
+        forecaster = Forecaster()
         forecaster.fit(df)
 
         forecaster_path.parent.mkdir(parents=True, exist_ok=True)
@@ -119,7 +119,7 @@ def train_and_forecast(horizon_days=7, train_first=False):
         LOGGER.info("Forecaster trained and saved", path=str(forecaster_path))
     else:
         LOGGER.info("Loading pre-trained forecaster")
-        forecaster = SimpleOxygenForecaster.load(str(forecaster_path))
+        forecaster = Forecaster.load(str(forecaster_path))
         LOGGER.info("Forecaster loaded")
 
     # Make predictions
@@ -198,12 +198,12 @@ def predict_from_input(input_file="input/input_for_anomaly.py"):
         return
 
     feature_engineer = OxygenFeatureEngineer.load(str(feature_path))
-    detector = UnifiedAnomalyDetector.load(str(model_path))
+    detector = AnomalyDetector.load(str(model_path))
     LOGGER.info("Models loaded")
 
     # Make predictions
     LOGGER.info("Running anomaly detection")
-    results = UnifiedAnomalyDetector.predict_single(
+    results = AnomalyDetector.predict_single(
         oxygen_data=df, feature_engineer=feature_engineer, detector=detector, threshold=0.25
     )
 
@@ -288,14 +288,14 @@ def main():
         LOGGER.info("OxyTrace - Oxygen Sensor Anomaly Detection & Forecasting")
         LOGGER.info("")
         LOGGER.info("Usage:")
-        LOGGER.info("  python -m oxytrace.src.main --demo              # Run demo workflow")
-        LOGGER.info("  python -m oxytrace.src.main --predict           # Predict from input/input_for_anomaly.py")
-        LOGGER.info("  python -m oxytrace.src.main --predict --input-file path/to/file.py  # Custom input")
-        LOGGER.info("  python -m oxytrace.src.main --forecast          # Generate forecast (uses existing model)")
-        LOGGER.info("  python -m oxytrace.src.main --forecast --train  # Retrain & forecast")
-        LOGGER.info("  python -m oxytrace.src.main --forecast --horizon 14  # 14-day forecast")
-        LOGGER.info("  python oxytrace/src/train_detector.py           # Train anomaly detector")
-        LOGGER.info("  python oxytrace/src/train_forecaster.py         # Train forecaster only")
+        LOGGER.info("  python -m oxytrace.cli.main --demo              # Run demo workflow")
+        LOGGER.info("  python -m oxytrace.cli.main --predict           # Predict from input/input_for_anomaly.py")
+        LOGGER.info("  python -m oxytrace.cli.main --predict --input-file path/to/file.py  # Custom input")
+        LOGGER.info("  python -m oxytrace.cli.main --forecast          # Generate forecast (uses existing model)")
+        LOGGER.info("  python -m oxytrace.cli.main --forecast --train  # Retrain & forecast")
+        LOGGER.info("  python -m oxytrace.cli.main --forecast --horizon 14  # 14-day forecast")
+        LOGGER.info("  python oxytrace/cli/train_detector.py           # Train anomaly detector")
+        LOGGER.info("  python oxytrace/cli/train_forecaster.py         # Train forecaster only")
         LOGGER.info("")
         LOGGER.info("Or use Makefile commands:")
         LOGGER.info("  make train      # Train models")

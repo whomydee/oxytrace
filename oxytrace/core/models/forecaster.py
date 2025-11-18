@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 
 
-class SimpleOxygenForecaster:
+class Forecaster:
 
     def __init__(self, short_window=1440, long_window=10080, alpha=0.3):
         self.short_window = short_window

@@ -6,14 +6,14 @@ The idea is simple: anomalies are isolated in high-dimensional feature space.
 
 Quick Usage:
     # Load models
-    from oxytrace.src.feature_engineering import OxygenFeatureEngineer
-    from oxytrace.src.models.unified_anomaly_detector import UnifiedAnomalyDetector
+    from oxytrace.core.features.oxygen import OxygenFeatureEngineer
+    from oxytrace.core.models.detector import AnomalyDetector
 
     fe = OxygenFeatureEngineer.load('artifacts/anomaly_detector/feature_engineer.pkl')
-    detector = UnifiedAnomalyDetector.load('artifacts/anomaly_detector/anomaly_detector.pkl')
+    detector = AnomalyDetector.load('artifacts/anomaly_detector/anomaly_detector.pkl')
 
     # Single prediction
-    result = UnifiedAnomalyDetector.predict_single(
+    result = AnomalyDetector.predict_single(
         oxygen_data={'time': '2024-01-01 10:00:00', 'Oxygen[%sat]': 88.5},
         feature_engineer=fe,
         detector=detector
@@ -30,7 +30,7 @@ from sklearn.ensemble import IsolationForest
 from sklearn.preprocessing import StandardScaler
 
 
-class UnifiedAnomalyDetector:
+class AnomalyDetector:
     """Detects anomalies in oxygen sensor data using Isolation Forest."""
 
     def __init__(self, contamination=0.05, n_estimators=100, max_samples=256, random_state=42):
@@ -133,7 +133,7 @@ class UnifiedAnomalyDetector:
                 - dict with 'time' and 'Oxygen[%sat]' keys
                 - tuple/list of (time, oxygen_value) pairs
             feature_engineer: Trained OxygenFeatureEngineer instance
-            detector: Trained UnifiedAnomalyDetector instance
+            detector: Trained AnomalyDetector instance
             threshold: Anomaly threshold (default: 0.25)
 
         Returns:

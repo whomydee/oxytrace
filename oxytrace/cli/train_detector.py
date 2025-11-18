@@ -7,8 +7,9 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from feature_engineering import OxygenFeatureEngineer
-from models.unified_anomaly_detector import UnifiedAnomalyDetector
+
+from oxytrace.core.features.oxygen import OxygenFeatureEngineer
+from oxytrace.core.models.detector import AnomalyDetector
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent))
@@ -45,7 +46,7 @@ def train_anomaly_detector(df, output_dir="artifacts/anomaly_detector"):
 
     # Step 2: Train anomaly detector
     print("Step 2: Training Isolation Forest...")
-    detector = UnifiedAnomalyDetector(
+    detector = AnomalyDetector(
         contamination=0.05, n_estimators=100, max_samples=256, random_state=42  # Expect ~5% anomalies
     )
 
@@ -82,7 +83,7 @@ def train_anomaly_detector(df, output_dir="artifacts/anomaly_detector"):
 
 def main():
     # Load data
-    data_path = "oxytrace/dataset/dataset.csv"
+    data_path = "oxytrace/data/dataset.csv"
     df = load_data(data_path)
 
     # Train model

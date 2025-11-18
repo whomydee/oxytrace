@@ -3,9 +3,9 @@ import logging
 import structlog
 
 try:
-    from .env_config import AppConfig
+    from .config import AppConfig
 except ImportError:
-    from env_config import AppConfig
+    from config import AppConfig
 
 config = AppConfig()
 LOG_LEVEL = config.log_level
