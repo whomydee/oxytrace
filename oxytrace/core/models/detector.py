@@ -50,6 +50,11 @@ class AnomalyDetector:
 
         self.is_fitted_ = False
         self.feature_names_ = None
+        
+        # Fixed thresholds computed during training
+        self.threshold_severe_ = None
+        self.threshold_moderate_ = None
+        self.threshold_mild_ = None
 
     def fit(self, X, feature_names=None):
         """Train the model on normal data (learns what normal looks like)."""
@@ -69,12 +74,24 @@ class AnomalyDetector:
 
         # Train model
         self.model.fit(X_scaled)
+        
+        # Compute fixed thresholds based on training score distribution
+        raw_scores = self.model.score_samples(X_scaled)
+        
+        # Use percentiles to set severity thresholds
+        # Severe: bottom 1% (most anomalous)
+        # Moderate: bottom 2.5%
+        # Mild: bottom 5% (contamination parameter)
+        self.threshold_severe_ = np.percentile(raw_scores, 1.0)
+        self.threshold_moderate_ = np.percentile(raw_scores, 2.5)
+        self.threshold_mild_ = np.percentile(raw_scores, self.contamination * 100)
+        
         self.is_fitted_ = True
 
         return self
 
     def predict_anomaly_score(self, X):
-        """Get anomaly score (0=normal, 1=anomaly) for each sample."""
+        """Get raw anomaly scores from Isolation Forest (lower = more anomalous)."""
         if not self.is_fitted_:
             raise RuntimeError("Model must be fitted before prediction")
 
@@ -88,39 +105,39 @@ class AnomalyDetector:
         # Scale features
         X_scaled = self.scaler.transform(X_array)
 
-        # Get scores from Isolation Forest
+        # Get raw scores from Isolation Forest (lower = more anomalous)
         raw_scores = self.model.score_samples(X_scaled)
 
-        # Convert to 0-1 range (higher = more anomalous)
-        min_score = raw_scores.min()
-        max_score = raw_scores.max()
+        # Mark invalid samples with very low score
+        raw_scores = raw_scores.copy()
+        raw_scores[~valid_mask] = -999.0
+        
+        return raw_scores
 
-        if max_score - min_score > 0:
-            anomaly_scores = 1 - (raw_scores - min_score) / (max_score - min_score)
-        else:
-            anomaly_scores = np.zeros_like(raw_scores)
-
-        anomaly_scores[~valid_mask] = 1.0
-        return anomaly_scores
-
-    def predict_anomaly_label(self, X, threshold=0.5):
-        """Get binary labels (0=normal, 1=anomaly) using threshold."""
-        scores = self.predict_anomaly_score(X)
-        return (scores >= threshold).astype(int)
+    def predict_anomaly_label(self, X):
+        """Get binary labels (0=normal, 1=anomaly) using mild threshold."""
+        raw_scores = self.predict_anomaly_score(X)
+        # Anything below mild threshold is considered anomaly
+        return (raw_scores < self.threshold_mild_).astype(int)
 
     def predict_with_severity(self, X):
         """
-        Get scores and severity levels.
+        Get scores and severity levels using fixed thresholds from training.
         Severity: 0=normal, 1=mild, 2=moderate, 3=severe
+        
+        Returns:
+            raw_scores: Raw Isolation Forest scores (lower = more anomalous)
+            severity: Severity levels (0-3)
         """
-        scores = self.predict_anomaly_score(X)
+        raw_scores = self.predict_anomaly_score(X)
 
-        severity = np.zeros_like(scores, dtype=int)
-        severity[(scores >= 0.3) & (scores < 0.5)] = 1  # Mild
-        severity[(scores >= 0.5) & (scores < 0.7)] = 2  # Moderate
-        severity[scores >= 0.7] = 3  # Severe
+        # Use fixed thresholds from training
+        severity = np.zeros_like(raw_scores, dtype=int)
+        severity[raw_scores < self.threshold_mild_] = 1      # Mild (bottom 5%)
+        severity[raw_scores < self.threshold_moderate_] = 2  # Moderate (bottom 2.5%)
+        severity[raw_scores < self.threshold_severe_] = 3    # Severe (bottom 1%)
 
-        return scores, severity
+        return raw_scores, severity
 
     @classmethod
     def predict_single(cls, oxygen_data, feature_engineer, detector, threshold=0.25):
@@ -198,6 +215,9 @@ class AnomalyDetector:
             "n_estimators": self.n_estimators,
             "max_samples": self.max_samples,
             "random_state": self.random_state,
+            "threshold_severe": self.threshold_severe_,
+            "threshold_moderate": self.threshold_moderate_,
+            "threshold_mild": self.threshold_mild_,
         }
 
         Path(filepath).parent.mkdir(parents=True, exist_ok=True)
@@ -218,6 +238,9 @@ class AnomalyDetector:
         detector.scaler = model_data["scaler"]
         detector.model = model_data["model"]
         detector.feature_names_ = model_data["feature_names"]
+        detector.threshold_severe_ = model_data.get("threshold_severe")
+        detector.threshold_moderate_ = model_data.get("threshold_moderate")
+        detector.threshold_mild_ = model_data.get("threshold_mild")
         detector.is_fitted_ = True
 
         return detector
