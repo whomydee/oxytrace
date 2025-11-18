@@ -50,7 +50,7 @@ class AnomalyDetector:
 
         self.is_fitted_ = False
         self.feature_names_ = None
-        
+
         # Fixed thresholds computed during training
         self.threshold_severe_ = None
         self.threshold_moderate_ = None
@@ -74,10 +74,10 @@ class AnomalyDetector:
 
         # Train model
         self.model.fit(X_scaled)
-        
+
         # Compute fixed thresholds based on training score distribution
         raw_scores = self.model.score_samples(X_scaled)
-        
+
         # Use percentiles to set severity thresholds
         # Severe: bottom 1% (most anomalous)
         # Moderate: bottom 2.5%
@@ -85,7 +85,7 @@ class AnomalyDetector:
         self.threshold_severe_ = np.percentile(raw_scores, 1.0)
         self.threshold_moderate_ = np.percentile(raw_scores, 2.5)
         self.threshold_mild_ = np.percentile(raw_scores, self.contamination * 100)
-        
+
         self.is_fitted_ = True
 
         return self
@@ -111,7 +111,7 @@ class AnomalyDetector:
         # Mark invalid samples with very low score
         raw_scores = raw_scores.copy()
         raw_scores[~valid_mask] = -999.0
-        
+
         return raw_scores
 
     def predict_anomaly_label(self, X):
@@ -124,7 +124,7 @@ class AnomalyDetector:
         """
         Get scores and severity levels using fixed thresholds from training.
         Severity: 0=normal, 1=mild, 2=moderate, 3=severe
-        
+
         Returns:
             raw_scores: Raw Isolation Forest scores (lower = more anomalous)
             severity: Severity levels (0-3)
@@ -133,9 +133,9 @@ class AnomalyDetector:
 
         # Use fixed thresholds from training
         severity = np.zeros_like(raw_scores, dtype=int)
-        severity[raw_scores < self.threshold_mild_] = 1      # Mild (bottom 5%)
+        severity[raw_scores < self.threshold_mild_] = 1  # Mild (bottom 5%)
         severity[raw_scores < self.threshold_moderate_] = 2  # Moderate (bottom 2.5%)
-        severity[raw_scores < self.threshold_severe_] = 3    # Severe (bottom 1%)
+        severity[raw_scores < self.threshold_severe_] = 3  # Severe (bottom 1%)
 
         return raw_scores, severity
 

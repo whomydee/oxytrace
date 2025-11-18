@@ -23,16 +23,18 @@ from oxytrace.core.utils.logger import LOGGER
 def check_dataset_available():
     """Check if dataset is available and offer to download if not."""
     dataset_path = DatasetManager.get_dataset_path("dataset.csv")
-    
+
     if not dataset_path.exists():
         st.warning("⚠️ Dataset not found at `oxytrace/data/dataset.csv`")
-        
-        st.markdown("""
+
+        st.markdown(
+            """
         The training dataset is required to train models. You can:
         1. Download it automatically using the button below
         2. Manually place your dataset file at `oxytrace/data/dataset.csv`
-        """)
-        
+        """
+        )
+
         if st.button("📥 Download Dataset from Google Drive", type="primary"):
             with st.spinner("Downloading dataset... This may take a few minutes."):
                 try:
@@ -42,9 +44,9 @@ def check_dataset_available():
                 except Exception as e:
                     st.error(f"❌ Failed to download dataset: {str(e)}")
                     st.info("Please ensure DATASET_URL is configured in your .env file or environment variables.")
-        
+
         return False
-    
+
     return True
 
 
@@ -332,15 +334,17 @@ def predict_anomaly_page():
             st.dataframe(df_input.head(10), use_container_width=True)
 
     # Show thresholds info
-    if detector is not None and hasattr(detector, 'threshold_mild_'):
+    if detector is not None and hasattr(detector, "threshold_mild_"):
         with st.expander("ℹ️ Model Thresholds (from training)", expanded=False):
-            st.markdown(f"""
+            st.markdown(
+                f"""
             - **Severe threshold**: {detector.threshold_severe_:.4f}
             - **Moderate threshold**: {detector.threshold_moderate_:.4f}
             - **Mild threshold**: {detector.threshold_mild_:.4f}
             
             *Lower raw scores indicate more anomalous readings*
-            """)
+            """
+            )
 
     # Predict button
     if df_input is not None and st.button("Detect Anomalies", type="primary"):
@@ -439,7 +443,9 @@ def predict_anomaly_page():
                     st.subheader("Detected Anomalies")
                     anomalies_df = df_results[df_results["is_anomaly"]][
                         ["time", "Oxygen[%sat]", "raw_score", "severity_label"]
-                    ].sort_values("raw_score", ascending=True)  # Lower score = more anomalous
+                    ].sort_values(
+                        "raw_score", ascending=True
+                    )  # Lower score = more anomalous
                     st.dataframe(anomalies_df, use_container_width=True)
 
                 # Download results
