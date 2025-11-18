@@ -119,7 +119,7 @@ def main():
     print("SYNTHETIC DATA SUMMARY")
     print("=" * 60)
     print(f"\nTotal samples: {len(df):,}")
-    print(f"\nAnomaly type distribution:")
+    print("Anomaly type distribution:")
     print(df["anomaly_type"].value_counts())
 
     print(f"\nData saved to: {output_path / 'synthetic_anomalies.csv'}")

@@ -8,9 +8,9 @@ from pathlib import Path
 import joblib
 import pandas as pd
 
-sys.path.insert(0, str(Path(__file__).parent))
+from oxytrace.core.models.detector import AnomalyDetector
 
-from oxytrace.src.models.unified_anomaly_detector import UnifiedAnomalyDetector
+sys.path.insert(0, str(Path(__file__).parent))
 
 
 def load_model(model_dir="artifacts/anomaly_detector"):
@@ -18,7 +18,7 @@ def load_model(model_dir="artifacts/anomaly_detector"):
     model_path = Path(model_dir)
 
     feature_engineer = joblib.load(model_path / "feature_engineer.pkl")
-    detector = UnifiedAnomalyDetector.load(model_path / "anomaly_detector.pkl")
+    detector = AnomalyDetector.load(model_path / "anomaly_detector.pkl")
 
     return feature_engineer, detector
 

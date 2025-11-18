@@ -2,7 +2,7 @@ from typing import Tuple
 
 import numpy as np
 
-from oxytrace.src.utils.custom_logger import LOGGER
+from oxytrace.core.utils.logger import LOGGER
 
 
 class StatisticalDetector:

@@ -10,9 +10,9 @@ from pathlib import Path
 import joblib
 import pandas as pd
 
-sys.path.insert(0, str(Path(__file__).parent))
+from oxytrace.core.models.detector import AnomalyDetector
 
-from oxytrace.src.models.unified_anomaly_detector import UnifiedAnomalyDetector
+sys.path.insert(0, str(Path(__file__).parent))
 
 
 def load_model(model_dir="artifacts/anomaly_detector"):
@@ -20,7 +20,7 @@ def load_model(model_dir="artifacts/anomaly_detector"):
     model_path = Path(model_dir)
 
     feature_engineer = joblib.load(model_path / "feature_engineer.pkl")
-    detector = UnifiedAnomalyDetector.load(model_path / "anomaly_detector.pkl")
+    detector = AnomalyDetector.load(model_path / "anomaly_detector.pkl")
 
     return feature_engineer, detector
 
@@ -79,13 +79,13 @@ def main():
     print("PREDICTION SUMMARY")
     print("=" * 60)
 
-    print(f"\nTotal samples: {len(results):,}")
-    print(f"\nAnomaly Score Distribution:")
+    print("Total samples: {len(results):,}")
+    print("Anomaly Score Distribution:")
     print(f"  Mean: {results['anomaly_score'].mean():.3f}")
     print(f"  Median: {results['anomaly_score'].median():.3f}")
     print(f"  Max: {results['anomaly_score'].max():.3f}")
 
-    print(f"\nSeverity Distribution:")
+    print("Severity Distribution:")
     severity_counts = results["severity_label"].value_counts()
     for severity in ["normal", "mild", "moderate", "severe"]:
         count = severity_counts.get(severity, 0)
@@ -96,7 +96,7 @@ def main():
     anomalies = results[results["anomaly_score"] > 0.7].sort_values("anomaly_score", ascending=False)
 
     if len(anomalies) > 0:
-        print(f"\nTop 5 Anomalies:")
+        print("Top 5 Anomalies:")
         print(anomalies[["time", "Oxygen[%sat]", "anomaly_score", "severity_label"]].head().to_string(index=False))
 
     # Save results

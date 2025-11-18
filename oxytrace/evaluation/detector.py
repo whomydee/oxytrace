@@ -8,7 +8,7 @@ def evaluate_at_threshold(df, threshold):
 
     tp = (true_anomalies & predicted_anomalies).sum()
     fp = (~true_anomalies & predicted_anomalies).sum()
-    tn = (~true_anomalies & ~predicted_anomalies).sum()
+    # tn = (~true_anomalies & ~predicted_anomalies).sum()
     fn = (true_anomalies & ~predicted_anomalies).sum()
 
     precision = tp / (tp + fp) if (tp + fp) > 0 else 0

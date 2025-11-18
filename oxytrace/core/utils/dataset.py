@@ -5,11 +5,11 @@ from typing import Optional, Tuple
 import gdown
 import pandas as pd
 
-from .custom_logger import LOGGER
-from .env_config import AppConfig
+from .config import AppConfig
+from .logger import LOGGER
 
 
-class DatasetUtil:
+class DatasetManager:
     """Utility class for downloading and loading datasets."""
 
     @staticmethod
@@ -23,12 +23,12 @@ class DatasetUtil:
         Returns:
             Path: Path to the dataset file
         """
-        return Path(__file__).parent.parent.parent / "dataset" / filename
+        return Path(__file__).parent.parent.parent / "data" / filename
 
     @staticmethod
     def download_dataset(output_filename: str = "dataset.csv") -> str:
         """
-        Downloads a CSV dataset from Google Drive and stores it in oxytrace/dataset directory.
+        Downloads a CSV dataset from Google Drive and stores it in oxytrace/data directory.
         If the downloaded file is a ZIP archive, it will be extracted automatically.
 
         Args:
@@ -45,8 +45,8 @@ class DatasetUtil:
         if not config.dataset_url:
             raise ValueError("DATASET_URL is not configured in environment variables")
 
-        # Create dataset directory if it doesn't exist
-        dataset_dir = Path(__file__).parent.parent.parent / "dataset"
+        # Create data directory if it doesn't exist
+        dataset_dir = Path(__file__).parent.parent.parent / "data"
         dataset_dir.mkdir(parents=True, exist_ok=True)
 
         # Download to a temporary file first
@@ -119,7 +119,7 @@ class DatasetUtil:
             FileNotFoundError: If dataset file doesn't exist
             ValueError: If percent_of_data is not between 0 and 100
         """
-        dataset_path = DatasetUtil.get_dataset_path(filename)
+        dataset_path = DatasetManager.get_dataset_path(filename)
 
         if not dataset_path.exists():
             raise FileNotFoundError(

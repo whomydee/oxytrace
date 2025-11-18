@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from models.simple_forecaster import SimpleOxygenForecaster
+from oxytrace.core.models.forecaster import Forecaster
 
 sys.path.insert(0, str(Path(__file__).parent))
 
@@ -28,7 +28,7 @@ def train_forecaster(df, output_dir="artifacts/forecaster"):
     print("=" * 60)
 
     print("\nStep 1: Training forecaster...")
-    forecaster = SimpleOxygenForecaster(short_window=1440, long_window=10080, alpha=0.3)
+    forecaster = Forecaster(short_window=1440, long_window=10080, alpha=0.3)
 
     forecaster.fit(df)
 
@@ -53,7 +53,7 @@ def train_forecaster(df, output_dir="artifacts/forecaster"):
 
 
 def main():
-    df = load_data("oxytrace/dataset/dataset.csv")
+    df = load_data("oxytrace/data/dataset.csv")
     train_forecaster(df)
 
     print("\n" + "=" * 60)

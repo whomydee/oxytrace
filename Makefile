@@ -72,19 +72,19 @@ check-lint: lint-flake8 lint-pylint ## Checks all linting issues
 
 download-data: ## Download dataset from Google Drive
 	@echo "Downloading dataset..."
-	$(PYTHON) -c "from oxytrace.src.utils.dataset_util import DatasetUtil; DatasetUtil.download_dataset()"
+	$(PYTHON) -c "from oxytrace.core.utils.dataset import DatasetManager; DatasetManager.download_dataset()"
 
 train-detector: ## Train anomaly detector (10% data, quick mode)
 	@echo "Training anomaly detector..."
-	$(PYTHON) oxytrace/src/train_detector.py --data-percent 10
+	$(PYTHON) oxytrace/cli/train_detector.py --data-percent 10
 
 train-detector-full: ## Train anomaly detector on full dataset
 	@echo "Training anomaly detector on full dataset..."
-	$(PYTHON) oxytrace/src/train_detector.py --data-percent 100
+	$(PYTHON) oxytrace/cli/train_detector.py --data-percent 100
 
 train-forecaster: ## Train forecaster on full dataset
 	@echo "Training forecaster..."
-	$(PYTHON) oxytrace/src/train_forecaster.py
+	$(PYTHON) oxytrace/cli/train_forecaster.py
 
 train: train-detector train-forecaster ## Train all models (detector + forecaster)
 
@@ -96,31 +96,31 @@ train-full: train-detector-full train-forecaster ## Train all models on full dat
 
 demo: ## Run anomaly detection demo (5% data)
 	@echo "Running demo workflow..."
-	$(PYTHON) -m oxytrace.src.main --demo
+	$(PYTHON) -m oxytrace.cli.main --demo
 
 predict: ## Predict anomalies from input file (input/input_for_anomaly.py)
 	@echo "Predicting anomalies from input file..."
-	$(PYTHON) -m oxytrace.src.main --predict
+	$(PYTHON) -m oxytrace.cli.main --predict
 
 predict-custom: ## Predict with custom input file (usage: make predict-custom INPUT=path/to/file.py)
 	@echo "Predicting anomalies from $(INPUT)..."
-	$(PYTHON) -m oxytrace.src.main --predict --input-file $(INPUT)
+	$(PYTHON) -m oxytrace.cli.main --predict --input-file $(INPUT)
 
 forecast: ## Generate 7-day forecast (uses existing model or trains if needed)
 	@echo "Generating 7-day forecast..."
-	$(PYTHON) -m oxytrace.src.main --forecast
+	$(PYTHON) -m oxytrace.cli.main --forecast
 
 forecast-retrain: ## Retrain forecaster and generate 7-day forecast
 	@echo "Retraining and generating 7-day forecast..."
-	$(PYTHON) -m oxytrace.src.main --forecast --train
+	$(PYTHON) -m oxytrace.cli.main --forecast --train
 
 forecast-14d: ## Generate 14-day forecast
 	@echo "Generating 14-day forecast..."
-	$(PYTHON) -m oxytrace.src.main --forecast --horizon 14
+	$(PYTHON) -m oxytrace.cli.main --forecast --horizon 14
 
 evaluate: ## Evaluate forecaster performance
 	@echo "Evaluating forecaster..."
-	$(PYTHON) oxytrace/src/evaluate_forecaster.py
+	$(PYTHON) oxytrace/cli/evaluate_forecaster.py
 
 
 #################################################################################
