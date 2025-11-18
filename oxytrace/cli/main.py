@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from oxytrace.core.features.oxygen import OxygenFeatureEngineer
+from oxytrace.core.features.oxygen_feature_engineer import OxygenFeatureEngineer
 from oxytrace.core.models.detector import AnomalyDetector
 from oxytrace.core.models.forecaster import Forecaster
 from oxytrace.core.utils.logger import LOGGER
