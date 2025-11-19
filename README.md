@@ -27,7 +27,7 @@ The technical report includes:
 - [Solution & Algorithm Choice](#-solution--algorithm-choice)
 - [System Design](#-system-design)
 - [Model Performance](#-model-performance)
-- [Project Setup](#-project-setup)
+- [Getting Started](#-getting-started)
 - [Usage](#-usage)
 - [Pretrained Models](#-pretrained-models)
 - [Limitations & Future Improvements](#-limitations--future-improvements)
@@ -880,6 +880,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Streamlit for the dashboard framework
 - The open-source community
 
----
-
-**Built with ❤️ for better healthcare monitoring**
