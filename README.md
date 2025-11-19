@@ -173,9 +173,23 @@ The success of Isolation Forest depends heavily on feature engineering. I create
 
 ## 🏗️ System Design
 
-### Complete ML Lifecycle
+### Unit Overview
 
-*[System design diagram and architecture details placeholder]*
+![Unit Diagram](assets/unit-diagram.png)
+
+### Training Pipeline
+
+![Training Pipeline](assets/training.png)
+
+### Serving System
+
+![Serving System - OxyTrace](assets/serving.png)
+
+### Complete System Architecture
+
+![Overall System Architecture with Communication](assets/whole-system.png)
+
+## Complete ML-Lifecycle
 
 ### Key Components
 
