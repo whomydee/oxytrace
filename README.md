@@ -23,17 +23,17 @@ The technical report includes:
 
 ## 📋 Table of Contents
 
-- [Features](#features)
-- [Solution & Algorithm Choice](#solution--algorithm-choice)
-- [System Design](#system-design)
-- [Model Performance](#model-performance)
-- [Getting Started](#getting-started)
-- [Usage](#usage)
-- [Pretrained Models](#pretrained-models)
-- [Limitations & Future Improvements](#limitations--future-improvements)
-- [Project Structure](#project-structure)
-- [Contributing](#contributing)
-- [License](#license)
+- [Features](#-features)
+- [Solution & Algorithm Choice](#-solution--algorithm-choice)
+- [System Design](#️-system-design)
+- [Model Performance](#-model-performance)
+- [Getting Started](#️-getting-started)
+- [Usage](#-usage)
+- [Pretrained Models](#-pretrained-models)
+- [Limitations & Future Improvements](#️-limitations--future-improvements)
+- [Project Structure](#-project-structure)
+- [Contributing](#-contributing)
+- [License](#-license)
 
 ## 🚀 Features
 
