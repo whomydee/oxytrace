@@ -662,8 +662,8 @@ def main():
         
         ### Model Performance
         
-        - **Anomaly Detection**: 64.3% recall, optimal threshold 0.25
-        - **Forecasting**: 10% MAE on 7-day horizon
+        - **Anomaly Detection**: 64.3% of recall on test data with fixed threshold approach
+        - **Forecasting**: Holt-Winters with adaptive seasonal patterns
         
         Use the sidebar to navigate between different features.
         """
