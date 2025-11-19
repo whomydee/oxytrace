@@ -23,17 +23,17 @@ The technical report includes:
 
 ## 📋 Table of Contents
 
-- [Features](#-features)
-- [Solution & Algorithm Choice](#-solution--algorithm-choice)
-- [System Design](#-system-design)
-- [Model Performance](#-model-performance)
-- [Getting Started](#-getting-started)
-- [Usage](#-usage)
-- [Pretrained Models](#-pretrained-models)
-- [Limitations & Future Improvements](#-limitations--future-improvements)
-- [Project Structure](#-project-structure)
-- [Contributing](#-contributing)
-- [License](#-license)
+- [Features](#features)
+- [Solution & Algorithm Choice](#solution--algorithm-choice)
+- [System Design](#system-design)
+- [Model Performance](#model-performance)
+- [Getting Started](#getting-started)
+- [Usage](#usage)
+- [Pretrained Models](#pretrained-models)
+- [Limitations & Future Improvements](#limitations--future-improvements)
+- [Project Structure](#project-structure)
+- [Contributing](#contributing)
+- [License](#license)
 
 ## 🚀 Features
 
@@ -175,19 +175,19 @@ The success of Isolation Forest depends heavily on feature engineering. I create
 
 ### Unit Overview
 
-![Unit Diagram](assets/unit-diagram.png)
+![Unit Diagram](https://raw.githubusercontent.com/whomydee/oxytrace/main/assets/unit-diagram.png)
 
 ### Training Pipeline
 
-![Training Pipeline](assets/training.png)
+![Training Pipeline](https://raw.githubusercontent.com/whomydee/oxytrace/main/assets/training.png)
 
 ### Serving System
 
-![Serving System - OxyTrace](assets/serving.png)
+![Serving System - OxyTrace](https://raw.githubusercontent.com/whomydee/oxytrace/main/assets/serving.png)
 
 ### Complete System Architecture
 
-![Overall System Architecture with Communication](assets/whole-system.png)
+![Overall System Architecture with Communication](https://raw.githubusercontent.com/whomydee/oxytrace/main/assets/whole-System.png)
 
 ## Complete ML-Lifecycle
 
@@ -454,11 +454,11 @@ The dashboard provides three main sections in the left sidebar:
 
 **Anomaly Detection:**
 
-![Anomaly Detection Screenshot](assets/anomaly-detection-screenshot.png)
+![Anomaly Detection Screenshot](https://raw.githubusercontent.com/whomydee/oxytrace/main/assets/anomaly-detection-screenshot.png)
 
 **Forecasting:**
 
-![Forecasting Screenshot](assets/forecast-screenshot.png)
+![Forecasting Screenshot](https://raw.githubusercontent.com/whomydee/oxytrace/main/assets/forecast-screenshot.png)
 
 ### Command-Line Interface (CLI)
 
