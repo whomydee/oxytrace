@@ -187,7 +187,7 @@ The success of Isolation Forest depends heavily on feature engineering. I create
 
 ### Complete System Architecture
 
-![Overall System Architecture with Communication](https://raw.githubusercontent.com/whomydee/oxytrace/main/assets/whole-System.png)
+![Overall System Architecture with Communication](https://raw.githubusercontent.com/whomydee/oxytrace/main/assets/whole-system.png)
 
 ## Complete ML-Lifecycle
 
